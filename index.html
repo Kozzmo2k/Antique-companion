@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Antique Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-base:        #f5f0e8;
+    --bg-surface:     #fdf8f0;
+    --bg-card:        #fffdf7;
+    --bg-nav:         #2c1a0e;
+    --border:         #d9c9a8;
+    --border-light:   #ede3cc;
+    --text-primary:   #1e110a;
+    --text-secondary: #6b4f35;
+    --text-muted:     #a08060;
+    --text-nav:       #f0e6d0;
+    --text-nav-muted: #a08878;
+    --accent:         #b5651d;
+    --accent-warm:    #c8892a;
+    --accent-gold:    #d4a843;
+    --accent-rust:    #9b3a1a;
+    --status-visited:  #6b8f5e;
+    --status-wishlist: #c8892a;
+    --shadow-sm:  0 1px 3px rgba(44,26,14,0.08);
+    --shadow-md:  0 4px 12px rgba(44,26,14,0.12);
+    --shadow-lg:  0 8px 28px rgba(44,26,14,0.16);
+    --radius-sm: 6px; --radius-md: 12px; --radius-lg: 18px;
+    --nav-width: 68px; --nav-width-open: 220px;
+    --header-h: 56px; --transition: 0.22s ease;
+  }
+  [data-theme="dark"] {
+    --bg-base:#1a0f07; --bg-surface:#231508; --bg-card:#2c1a0e; --bg-nav:#140b04;
+    --border:#3d2510; --border-light:#2e1a0c;
+    --text-primary:#f0e6d0; --text-secondary:#c4a882; --text-muted:#7a6048;
+    --text-nav:#f0e6d0; --text-nav-muted:#7a6048;
+    --accent:#d4873a; --accent-warm:#e0a050; --accent-gold:#e8bf6a; --accent-rust:#c05030;
+    --status-visited:#7aab6a; --status-wishlist:#e0a050;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.3); --shadow-md:0 4px 12px rgba(0,0,0,0.4); --shadow-lg:0 8px 28px rgba(0,0,0,0.5);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;overflow:hidden}
+  #app{display:flex;height:100dvh;width:100%;overflow:hidden}
+
+  /* SIDEBAR */
+  #sidebar{display:flex;flex-direction:column;width:var(--nav-width);background:var(--bg-nav);transition:width var(--transition);overflow:hidden;flex-shrink:0;z-index:100;position:relative}
+  #sidebar.open{width:var(--nav-width-open)}
+  .sidebar-header{display:flex;align-items:center;gap:12px;padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.06);min-height:var(--header-h);overflow:hidden}
+  .sidebar-logo{width:36px;height:36px;flex-shrink:0;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+  .sidebar-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--text-nav);white-space:nowrap;opacity:0;transition:opacity var(--transition);line-height:1.2}
+  .sidebar-subtitle{font-size:10px;color:var(--text-nav-muted);font-weight:300;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap}
+  #sidebar.open .sidebar-title{opacity:1}
+  .nav-items{flex:1;padding:10px 0;display:flex;flex-direction:column;gap:2px}
+  .nav-item{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;color:var(--text-nav-muted);transition:background var(--transition),color var(--transition);white-space:nowrap;overflow:hidden;position:relative;border:none;background:none;width:100%;text-align:left}
+  .nav-item:hover{background:rgba(255,255,255,0.05);color:var(--text-nav)}
+  .nav-item.active{background:rgba(181,101,29,0.2);color:var(--accent-warm)}
+  .nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:0 3px 3px 0}
+  .nav-icon{font-size:20px;flex-shrink:0;width:36px;text-align:center}
+  .nav-label{font-size:13.5px;font-weight:500;opacity:0;transition:opacity var(--transition)}
+  #sidebar.open .nav-label{opacity:1}
+  .nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:10px;opacity:0;transition:opacity var(--transition);flex-shrink:0}
+  #sidebar.open .nav-badge{opacity:1}
+  .sidebar-footer{padding:12px 0;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:2px}
+  .sidebar-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;margin:8px auto 4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;color:var(--text-nav-muted);font-size:16px;transition:background var(--transition),color var(--transition);flex-shrink:0}
+  .sidebar-toggle:hover{background:rgba(255,255,255,0.1);color:var(--text-nav)}
+
+  /* MAIN */
+  #main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+  #topbar{height:var(--header-h);background:var(--bg-surface);border-bottom:1px solid var(--border-light);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;box-shadow:var(--shadow-sm)}
+  .topbar-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--text-primary);flex:1}
+  .topbar-subtitle{font-size:11px;color:var(--text-muted);font-style:italic;font-family:'Lora',serif}
+  .topbar-actions{display:flex;align-items:center;gap:8px}
+  .icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:background var(--transition),color var(--transition)}
+  .icon-btn:hover{background:var(--border-light);color:var(--text-primary)}
+  #content{flex:1;overflow-y:auto;padding:20px 16px 80px;-webkit-overflow-scrolling:touch}
+  #content::-webkit-scrollbar{width:5px}
+  #content::-webkit-scrollbar-track{background:transparent}
+  #content::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+
+  /* BOTTOM NAV */
+  #bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:62px;background:var(--bg-nav);border-top:1px solid rgba(255,255,255,0.06);z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+  .bottom-nav-inner{display:flex;height:62px;align-items:stretch}
+  .bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-nav-muted);transition:color var(--transition);border:none;background:none;position:relative;padding:0}
+  .bottom-nav-item.active{color:var(--accent-warm)}
+  .bottom-nav-item.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--accent);border-radius:0 0 3px 3px}
+  .bottom-nav-icon{font-size:21px;line-height:1}
+  .bottom-nav-label{font-size:10px;font-weight:500;letter-spacing:0.02em}
+
+  /* VIEWS */
+  .view{display:none;animation:fadeIn 0.25s ease}
+  .view.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* DASHBOARD */
+  .dashboard-greeting{margin-bottom:24px}
+  .dashboard-greeting h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;line-height:1.2}
+  .dashboard-greeting p{font-family:'Lora',serif;font-style:italic;color:var(--text-muted);font-size:14px;margin-top:4px}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+  .stat-card{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:16px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);border-radius:var(--radius-md) var(--radius-md) 0 0}
+  .stat-card.green::before{background:var(--status-visited)}
+  .stat-card.amber::before{background:var(--status-wishlist)}
+  .stat-card.rust::before{background:var(--accent-rust)}
+  .stat-card.gold::before{background:var(--accent-gold)}
+  .stat-value{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1}
+  .stat-label{font-size:11.5px;color:var(--text-muted);margin-top:5px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
+  .stat-icon{position:absolute;top:14px;right:14px;font-size:22px;opacity:0.18}
+  .section-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border-light)}
+  .recent-card{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:12px;cursor:pointer;transition:box-shadow var(--transition),border-color var(--transition)}
+  .recent-card:hover{box-shadow:var(--shadow-md);border-color:var(--border)}
+  .recent-thumb{width:52px;height:52px;border-radius:var(--radius-sm);background:var(--border-light);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden}
+  .recent-thumb img{width:100%;height:100%;object-fit:cover}
+  .recent-info{flex:1;min-width:0}
+  .recent-name{font-family:'Lora',serif;font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .recent-meta{font-size:11.5px;color:var(--text-muted);margin-top:2px}
+  .stars{color:var(--accent-gold);font-size:13px;letter-spacing:-1px}
+  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .status-dot.visited{background:var(--status-visited)}
+  .status-dot.wishlist{background:var(--status-wishlist)}
+  .empty-state{text-align:center;padding:32px 0;color:var(--text-muted);font-family:'Lora',serif;font-style:italic;font-size:14px}
+
+  /* STORES TOOLBAR */
+  .stores-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .toolbar-left{display:flex;gap:8px;flex:1;min-width:0}
+  .search-box{flex:1;min-width:0;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:13.5px;padding:0 12px;outline:none;transition:border-color var(--transition)}
+  .search-box:focus{border-color:var(--accent)}
+  .search-box::placeholder{color:var(--text-muted)}
+  .select-box{height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:13px;padding:0 8px;outline:none;cursor:pointer}
+  .view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+  .view-toggle-btn{width:34px;height:34px;border:none;background:var(--bg-card);color:var(--text-muted);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:background var(--transition),color var(--transition)}
+  .view-toggle-btn.active{background:var(--accent);color:#fff}
+  .tag-filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:8px;scrollbar-width:none}
+  .tag-filter-row::-webkit-scrollbar{display:none}
+  .tag-chip{flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:12px;font-weight:500;cursor:pointer;transition:background var(--transition),color var(--transition),border-color var(--transition);white-space:nowrap}
+  .tag-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* CARD GRID */
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(min-width:480px){.card-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+  .store-card{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;box-shadow:var(--shadow-sm);transition:box-shadow var(--transition),transform 0.15s ease}
+  .store-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .store-card-img{width:100%;height:110px;background:var(--border-light);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;position:relative}
+  .store-card-img img{width:100%;height:100%;object-fit:cover}
+  .store-card-status{position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;border:2px solid #fff}
+  .store-card-status.visited{background:var(--status-visited)}
+  .store-card-status.wishlist{background:var(--status-wishlist)}
+  .store-card-body{padding:10px}
+  .store-card-name{font-family:'Lora',serif;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px;line-height:1.3}
+  .store-card-city{font-size:11px;color:var(--text-muted);margin-bottom:6px}
+  .store-card-stars{font-size:12px;color:var(--accent-gold);letter-spacing:-1px}
+  .store-card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+  .mini-tag{font-size:10px;padding:2px 6px;border-radius:10px;background:var(--border-light);color:var(--text-muted)}
+
+  /* LIST VIEW */
+  .store-list-item{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:var(--shadow-sm);transition:box-shadow var(--transition)}
+  .store-list-item:hover{box-shadow:var(--shadow-md)}
+  .list-thumb{width:48px;height:48px;border-radius:var(--radius-sm);background:var(--border-light);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden}
+  .list-thumb img{width:100%;height:100%;object-fit:cover}
+  .list-info{flex:1;min-width:0}
+  .list-name{font-family:'Lora',serif;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .list-sub{font-size:11.5px;color:var(--text-muted);margin-top:2px}
+  .list-right{text-align:right;flex-shrink:0}
+  .list-overall{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--accent)}
+  .list-visits{font-size:10.5px;color:var(--text-muted);margin-top:2px}
+
+  /* PLACEHOLDER */
+  .placeholder-view{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:12px;padding:32px}
+  .placeholder-icon{font-size:56px;opacity:0.25;line-height:1}
+  .placeholder-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--text-secondary)}
+  .placeholder-text{font-family:'Lora',serif;font-style:italic;color:var(--text-muted);font-size:14px;max-width:260px;line-height:1.6}
+  .coming-soon-badge{background:var(--border-light);color:var(--text-muted);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:5px 14px;border-radius:20px;border:1px solid var(--border);margin-top:4px}
+
+  /* FAB */
+  #fab{position:fixed;bottom:80px;right:20px;width:52px;height:52px;background:var(--accent);color:#fff;border-radius:50%;border:none;cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(181,101,29,0.45);z-index:150;transition:transform 0.18s ease,background var(--transition)}
+  #fab:hover{transform:scale(1.08);background:var(--accent-warm)}
+  #fab:active{transform:scale(0.96)}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,10,4,0.65);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s ease}
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal-sheet{background:var(--bg-surface);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:92dvh;display:flex;flex-direction:column;transform:translateY(40px);transition:transform 0.28s cubic-bezier(.32,1,.52,1)}
+  .modal-overlay.open .modal-sheet{transform:translateY(0)}
+  .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;flex-shrink:0}
+  .modal-header{display:flex;align-items:center;padding:14px 16px 12px;border-bottom:1px solid var(--border-light);flex-shrink:0;gap:10px}
+  .modal-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;flex:1}
+  .modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .modal-body{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch}
+  .modal-footer{padding:12px 16px;border-top:1px solid var(--border-light);display:flex;gap:10px;flex-shrink:0;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+
+  /* FORM */
+  .form-section{margin-bottom:20px}
+  .form-section-title{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border-light)}
+  .form-row{margin-bottom:12px}
+  .form-label{display:block;font-size:12.5px;font-weight:500;color:var(--text-secondary);margin-bottom:5px}
+  .form-input{width:100%;height:40px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:14px;padding:0 12px;outline:none;transition:border-color var(--transition)}
+  .form-input:focus{border-color:var(--accent)}
+  .form-textarea{width:100%;min-height:72px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 12px;outline:none;resize:vertical;transition:border-color var(--transition);line-height:1.5}
+  .form-textarea:focus{border-color:var(--accent)}
+  .form-select{width:100%;height:40px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:14px;padding:0 12px;outline:none;cursor:pointer}
+  .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .status-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+  .status-btn{flex:1;height:40px;border:none;background:var(--bg-card);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;cursor:pointer;transition:background var(--transition),color var(--transition)}
+  .status-btn.active-visited{background:var(--status-visited);color:#fff}
+  .status-btn.active-wishlist{background:var(--status-wishlist);color:#fff}
+  .star-rating-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .star-rating-label{font-size:13px;color:var(--text-secondary)}
+  .star-input{display:flex;gap:4px}
+  .star-btn{font-size:22px;background:none;border:none;cursor:pointer;color:var(--border);transition:color 0.15s ease,transform 0.1s ease;line-height:1;padding:2px}
+  .star-btn.filled{color:var(--accent-gold)}
+  .star-btn:hover{transform:scale(1.15)}
+  .tag-picker{display:flex;flex-wrap:wrap;gap:6px}
+  .tag-pick-btn{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:12.5px;font-weight:500;cursor:pointer;transition:background var(--transition),color var(--transition),border-color var(--transition)}
+  .tag-pick-btn.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .photo-upload-area{border:2px dashed var(--border);border-radius:var(--radius-md);padding:20px;text-align:center;cursor:pointer;transition:border-color var(--transition),background var(--transition);background:var(--bg-card)}
+  .photo-upload-area:hover{border-color:var(--accent);background:var(--border-light)}
+  .photo-upload-area.has-photo{padding:0;border-style:solid;overflow:hidden}
+  .photo-upload-area img{width:100%;height:160px;object-fit:cover;display:block}
+  .photo-upload-icon{font-size:28px;margin-bottom:6px;opacity:0.5}
+  .photo-upload-text{font-size:13px;color:var(--text-muted)}
+  .photo-upload-hint{font-size:11px;color:var(--text-muted);margin-top:3px;opacity:0.7}
+  .btn{height:42px;border-radius:var(--radius-sm);border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background var(--transition),opacity var(--transition);display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn-primary{background:var(--accent);color:#fff;flex:1}
+  .btn-primary:hover{background:var(--accent-warm)}
+  .btn-secondary{background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);padding:0 16px}
+  .btn-secondary:hover{background:var(--border-light)}
+  .btn-danger{background:#c0392b;color:#fff;padding:0 14px}
+  .btn-danger:hover{background:#a93226}
+
+  /* DETAIL */
+  .detail-hero{width:100%;height:180px;background:var(--border-light);border-radius:var(--radius-md);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:56px;margin-bottom:16px;position:relative;cursor:pointer}
+  .detail-hero img{width:100%;height:100%;object-fit:cover}
+  .detail-hero-overlay{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.5);color:#fff;font-size:11px;padding:4px 10px;border-radius:20px}
+  .detail-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px}
+  .detail-address{font-size:13px;color:var(--text-muted);margin-bottom:10px}
+  .detail-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .detail-badge{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500}
+  .detail-badge.visited{background:rgba(107,143,94,0.15);color:var(--status-visited);border:1px solid var(--status-visited)}
+  .detail-badge.wishlist{background:rgba(200,137,42,0.15);color:var(--status-wishlist);border:1px solid var(--status-wishlist)}
+  .detail-actions{display:flex;gap:8px;margin-bottom:20px}
+  .detail-action-btn{flex:1;height:38px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:background var(--transition)}
+  .detail-action-btn:hover{background:var(--border-light);color:var(--text-primary)}
+  .ratings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+  .rating-item{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:12px;text-align:center}
+  .rating-item-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+  .rating-item-stars{font-size:16px;color:var(--accent-gold);letter-spacing:-1px}
+  .rating-item-num{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-top:2px}
+  .visit-entry{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:12px 14px;margin-bottom:8px}
+  .visit-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .visit-date{font-size:12px;font-weight:600;color:var(--accent)}
+  .visit-delete{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:2px}
+  .visit-notes{font-size:13.5px;line-height:1.5;margin-bottom:4px}
+  .visit-finds{font-size:12px;color:var(--text-secondary);font-style:italic;font-family:'Lora',serif}
+  .visit-finds::before{content:'🏷️ '}
+
+  /* TEXTURE */
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:0.025;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
+
+  /* RESPONSIVE */
+  @media(max-width:640px){
+    #sidebar{display:none}
+    #bottom-nav{display:block}
+    #content{padding-bottom:88px}
+    #fab{bottom:74px}
+    .stat-value{font-size:26px}
+  }
+  @media(min-width:641px){
+    #bottom-nav{display:none!important}
+    .modal-overlay{align-items:center}
+    .modal-sheet{border-radius:var(--radius-lg);max-height:85dvh}
+  }
+  .loading-spinner{text-align:center;padding:40px;color:var(--text-muted);font-family:'Lora',serif;font-style:italic}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🏺</div>
+      <div><div class="sidebar-title">Antique Companion</div><div class="sidebar-subtitle">Your scouting journal</div></div>
+    </div>
+    <div class="nav-items">
+      <button class="nav-item active" data-view="dashboard"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></button>
+      <button class="nav-item" data-view="stores"><span class="nav-icon">🏪</span><span class="nav-label">My Stores</span><span class="nav-badge" id="sb-stores-badge">0</span></button>
+      <button class="nav-item" data-view="map"><span class="nav-icon">🗺️</span><span class="nav-label">Map</span></button>
+      <button class="nav-item" data-view="wishlist"><span class="nav-icon">⭐</span><span class="nav-label">Wishlist</span><span class="nav-badge" id="sb-wish-badge">0</span></button>
+      <button class="nav-item" data-view="discover"><span class="nav-icon">🔍</span><span class="nav-label">Discover</span></button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="nav-item" data-view="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+      <button class="sidebar-toggle" id="sidebar-toggle">⇄</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-subtitle" id="topbar-subtitle">Welcome back</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="theme-toggle">🌙</button>
+        <button class="icon-btn" id="topbar-add">＋</button>
+      </div>
+    </div>
+
+    <div id="content">
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="dashboard-greeting"><h2>Happy Hunting 🏺</h2><p>Your personal antique scouting journal</p></div>
+        <div class="stat-grid">
+          <div class="stat-card green"><div class="stat-icon">🏪</div><div class="stat-value" id="stat-visited">0</div><div class="stat-label">Stores Visited</div></div>
+          <div class="stat-card amber"><div class="stat-icon">⭐</div><div class="stat-value" id="stat-wishlist">0</div><div class="stat-label">On Wishlist</div></div>
+          <div class="stat-card gold"><div class="stat-icon">📔</div><div class="stat-value" id="stat-visits">0</div><div class="stat-label">Total Visits</div></div>
+          <div class="stat-card rust"><div class="stat-icon">🏷️</div><div class="stat-value" id="stat-tags">0</div><div class="stat-label">Store Tags</div></div>
+        </div>
+        <div class="section-title">Recently Visited</div>
+        <div id="recent-stores"><div class="empty-state">No stores yet — add your first one!</div></div>
+        <div class="section-title" style="margin-top:24px">Up Next on Wishlist</div>
+        <div id="wishlist-preview"><div class="empty-state">Your wishlist is empty</div></div>
+      </div>
+
+      <!-- STORES -->
+      <div class="view" id="view-stores">
+        <div class="stores-toolbar">
+          <div class="toolbar-left">
+            <input class="search-box" id="stores-search" placeholder="Search stores…" type="search" />
+            <select class="select-box" id="stores-sort">
+              <option value="recent">Recent</option>
+              <option value="name">Name A–Z</option>
+              <option value="overall">Top Rated</option>
+              <option value="lastVisit">Last Visited</option>
+            </select>
+          </div>
+          <div class="view-toggle">
+            <button class="view-toggle-btn active" id="btn-grid">⊞</button>
+            <button class="view-toggle-btn" id="btn-list">☰</button>
+          </div>
+        </div>
+        <div class="tag-filter-row" id="tag-filter-row"></div>
+        <div id="stores-container"><div class="loading-spinner">Loading stores…</div></div>
+      </div>
+
+      <!-- MAP -->
+      <div class="view" id="view-map">
+        <div class="placeholder-view"><div class="placeholder-icon">🗺️</div><div class="placeholder-title">Map View</div><div class="placeholder-text">See all your stores pinned on a map with satellite and street toggles.</div><div class="coming-soon-badge">Phase 3 — Coming Soon</div></div>
+      </div>
+
+      <!-- WISHLIST -->
+      <div class="view" id="view-wishlist">
+        <div id="wishlist-container"><div class="loading-spinner">Loading…</div></div>
+      </div>
+
+      <!-- DISCOVER -->
+      <div class="view" id="view-discover">
+        <div class="placeholder-view"><div class="placeholder-icon">🔍</div><div class="placeholder-title">Discover</div><div class="placeholder-text">Search for antique and thrift stores near any location.</div><div class="coming-soon-badge">Phase 4 — Coming Soon</div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="view" id="view-settings">
+        <div class="placeholder-view"><div class="placeholder-icon">⚙️</div><div class="placeholder-title">Settings</div><div class="placeholder-text">App preferences and more.</div><div class="coming-soon-badge">Phase 5 — Coming Soon</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav id="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bottom-nav-item active" data-view="dashboard"><span class="bottom-nav-icon">🏠</span><span class="bottom-nav-label">Home</span></button>
+    <button class="bottom-nav-item" data-view="stores"><span class="bottom-nav-icon">🏪</span><span class="bottom-nav-label">Stores</span></button>
+    <button class="bottom-nav-item" data-view="map"><span class="bottom-nav-icon">🗺️</span><span class="bottom-nav-label">Map</span></button>
+    <button class="bottom-nav-item" data-view="wishlist"><span class="bottom-nav-icon">⭐</span><span class="bottom-nav-label">Wishlist</span></button>
+    <button class="bottom-nav-item" data-view="discover"><span class="bottom-nav-icon">🔍</span><span class="bottom-nav-label">Discover</span></button>
+  </div>
+</nav>
+
+<!-- FAB -->
+<button id="fab">＋</button>
+
+<!-- ADD/EDIT STORE MODAL -->
+<div class="modal-overlay" id="modal-store">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="modal-store-title">Add Store</div>
+      <button class="modal-close" id="modal-store-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <div class="form-section-title">Status</div>
+        <div class="status-toggle">
+          <button class="status-btn active-visited" id="status-visited-btn">✓ Visited</button>
+          <button class="status-btn" id="status-wishlist-btn">⭐ Wishlist</button>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Store Info</div>
+        <div class="form-row"><label class="form-label">Store Name *</label><input class="form-input" id="f-name" placeholder="e.g. Grandma's Attic" /></div>
+        <div class="form-row"><label class="form-label">Address</label><input class="form-input" id="f-address" placeholder="123 Main St" /></div>
+        <div class="form-row-2">
+          <div><label class="form-label">City</label><input class="form-input" id="f-city" placeholder="City" /></div>
+          <div><label class="form-label">State</label><input class="form-input" id="f-state" placeholder="OH" maxlength="2" /></div>
+        </div>
+        <div class="form-row-2">
+          <div><label class="form-label">Phone</label><input class="form-input" id="f-phone" placeholder="(555) 555-5555" type="tel" /></div>
+          <div><label class="form-label">Website</label><input class="form-input" id="f-website" placeholder="www.example.com" /></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Storefront Photo</div>
+        <div class="photo-upload-area" id="photo-upload-area">
+          <div class="photo-upload-icon">📷</div>
+          <div class="photo-upload-text">Tap to add a photo</div>
+          <div class="photo-upload-hint">From your camera roll or files</div>
+        </div>
+        <input type="file" id="f-photo-input" accept="image/*" style="display:none" />
+        <div style="margin-top:8px;display:none" id="photo-url-row">
+          <label class="form-label">Or paste an image URL</label>
+          <input class="form-input" id="f-photo-url" placeholder="https://…" />
+        </div>
+        <button id="show-url-btn" style="margin-top:6px;background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;padding:0">+ Use URL instead</button>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Specialty Tags</div>
+        <div class="tag-picker" id="tag-picker"></div>
+      </div>
+      <div class="form-section" id="ratings-section">
+        <div class="form-section-title">Ratings</div>
+        <div class="star-rating-row"><span class="star-rating-label">Selection</span><div class="star-input" id="stars-selection"></div></div>
+        <div class="star-rating-row"><span class="star-rating-label">Prices</span><div class="star-input" id="stars-prices"></div></div>
+        <div class="star-rating-row"><span class="star-rating-label">Organization</span><div class="star-input" id="stars-organization"></div></div>
+        <div class="star-rating-row"><span class="star-rating-label">Overall</span><div class="star-input" id="stars-overall"></div></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Notes</div>
+        <textarea class="form-textarea" id="f-notes" placeholder="Any general thoughts about this store…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-store-cancel">Cancel</button>
+      <button class="btn btn-primary" id="modal-store-save">💾 Save Store</button>
+    </div>
+  </div>
+</div>
+
+<!-- STORE DETAIL MODAL -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="detail-modal-title">Store Details</div>
+      <button class="modal-close" id="modal-detail-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="detail-delete-btn">🗑</button>
+      <button class="btn btn-secondary" id="detail-edit-btn">✏️ Edit</button>
+      <button class="btn btn-primary" id="detail-visit-btn">📔 Log Visit</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG VISIT MODAL -->
+<div class="modal-overlay" id="modal-visit">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Log a Visit</div>
+      <button class="modal-close" id="modal-visit-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Date *</label><input class="form-input" id="v-date" type="date" /></div>
+      <div class="form-row"><label class="form-label">Notes</label><textarea class="form-textarea" id="v-notes" placeholder="How was the visit? What did you find?"></textarea></div>
+      <div class="form-row"><label class="form-label">Items Found / Purchased</label><input class="form-input" id="v-finds" placeholder="e.g. Victorian lamp, set of china" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-visit-cancel">Cancel</button>
+      <button class="btn btn-primary" id="modal-visit-save">Save Visit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script>
+// ── FIREBASE ──────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyAIR84hfWKoJH7oovsYXsYxb4tuM1RwSLQ",
+  authDomain: "antique-companion.firebaseapp.com",
+  projectId: "antique-companion",
+  storageBucket: "antique-companion.firebasestorage.app",
+  messagingSenderId: "228058109615",
+  appId: "1:228058109615:web:b373775ccb8a858a89665a"
+});
+const db = firebase.firestore();
+const storesCol = db.collection('stores');
+
+// ── STATE ─────────────────────────────────────────────────
+let allStores = [];
+let currentView = 'dashboard';
+let storeViewMode = 'grid';
+let activeTagFilter = null;
+let editingStoreId = null;
+let detailStoreId = null;
+let currentStatus = 'visited';
+let currentRatings = { selection:0, prices:0, organization:0, overall:0 };
+let currentPhotoData = null;
+let currentTags = [];
+
+const TAGS = ['Furniture','Clothing & Accessories','Books & Paper','Jewelry',
+  'Tools & Hardware','Primitives & Farm','Art & Décor',
+  'Vintage Electronics','Toys & Collectibles','Glassware & China'];
+
+// ── NAV ───────────────────────────────────────────────────
+const viewMeta = {
+  dashboard:{ title:'Dashboard', subtitle:'Welcome back' },
+  stores:   { title:'My Stores', subtitle:'Browse your collection' },
+  map:      { title:'Map View',  subtitle:'See stores near you' },
+  wishlist: { title:'Wishlist',  subtitle:'Places to explore' },
+  discover: { title:'Discover',  subtitle:'Find new stores nearby' },
+  settings: { title:'Settings',  subtitle:'App preferences' },
+};
+
+function navigateTo(view) {
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-'+view)?.classList.add('active');
+  document.getElementById('topbar-title').textContent = viewMeta[view].title;
+  document.getElementById('topbar-subtitle').textContent = viewMeta[view].subtitle;
+  document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.getElementById('fab').style.display = ['stores','dashboard','wishlist'].includes(view) ? 'flex' : 'none';
+  if (view === 'stores') renderStores();
+  if (view === 'wishlist') renderWishlist();
+}
+document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => navigateTo(btn.dataset.view)));
+document.getElementById('sidebar-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+// ── THEME ─────────────────────────────────────────────────
+let isDark = false;
+const themeBtn = document.getElementById('theme-toggle');
+function setTheme(dark) {
+  isDark = dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+  localStorage.setItem('ac-theme', dark ? 'dark' : 'light');
+}
+themeBtn.addEventListener('click', () => setTheme(!isDark));
+if (localStorage.getItem('ac-theme') === 'dark') setTheme(true);
+
+// ── FIRESTORE LISTENER ────────────────────────────────────
+storesCol.orderBy('createdAt','desc').onSnapshot(snap => {
+  allStores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  updateStats();
+  renderDashboard();
+  if (currentView === 'stores') renderStores();
+  if (currentView === 'wishlist') renderWishlist();
+}, err => console.error(err));
+
+// ── STATS ─────────────────────────────────────────────────
+function updateStats() {
+  const visited  = allStores.filter(s => s.status === 'visited');
+  const wishlist = allStores.filter(s => s.status === 'wishlist');
+  const visits   = allStores.reduce((n,s) => n + (s.visits?.length||0), 0);
+  const tags     = new Set(allStores.flatMap(s => s.tags||[])).size;
+  document.getElementById('stat-visited').textContent  = visited.length;
+  document.getElementById('stat-wishlist').textContent = wishlist.length;
+  document.getElementById('stat-visits').textContent   = visits;
+  document.getElementById('stat-tags').textContent     = tags;
+  document.getElementById('sb-stores-badge').textContent = visited.length;
+  document.getElementById('sb-wish-badge').textContent   = wishlist.length;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+function renderDashboard() {
+  const visited = allStores.filter(s => s.status==='visited').sort((a,b) => lastVisitTs(b)-lastVisitTs(a)).slice(0,4);
+  const wish    = allStores.filter(s => s.status==='wishlist').slice(0,3);
+  const rEl = document.getElementById('recent-stores');
+  rEl.innerHTML = visited.length ? visited.map(recentCardHTML).join('') : '<div class="empty-state">No stores yet — add your first one!</div>';
+  rEl.querySelectorAll('.recent-card').forEach(c => c.addEventListener('click', () => openDetail(c.dataset.id)));
+  const wEl = document.getElementById('wishlist-preview');
+  wEl.innerHTML = wish.length ? wish.map(recentCardHTML).join('') : '<div class="empty-state">Your wishlist is empty</div>';
+  wEl.querySelectorAll('.recent-card').forEach(c => c.addEventListener('click', () => openDetail(c.dataset.id)));
+}
+
+function recentCardHTML(s) {
+  const ov = s.ratings?.overall||0;
+  const stars = ov ? '★'.repeat(ov)+'☆'.repeat(5-ov) : '—';
+  const lastV = lastVisitStr(s);
+  const thumb = s.photo ? `<img src="${s.photo}" onerror="this.style.display='none'">` : '🏪';
+  return `<div class="recent-card" data-id="${s.id}">
+    <div class="recent-thumb">${thumb}</div>
+    <div class="recent-info">
+      <div class="recent-name">${esc(s.name)}</div>
+      <div class="recent-meta">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')}${lastV?' · '+lastV:''}</div>
+    </div>
+    <div><div class="stars">${stars}</div><div class="status-dot ${s.status}" style="margin:6px auto 0"></div></div>
+  </div>`;
+}
+
+// ── STORES VIEW ───────────────────────────────────────────
+function renderStores() {
+  const search = document.getElementById('stores-search').value.toLowerCase();
+  const sort   = document.getElementById('stores-sort').value;
+  let stores   = allStores.filter(s => s.status==='visited');
+  if (activeTagFilter) stores = stores.filter(s => s.tags?.includes(activeTagFilter));
+  if (search) stores = stores.filter(s => s.name.toLowerCase().includes(search)||(s.city||'').toLowerCase().includes(search));
+  if (sort==='name') stores.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sort==='overall') stores.sort((a,b) => (b.ratings?.overall||0)-(a.ratings?.overall||0));
+  else if (sort==='lastVisit') stores.sort((a,b) => lastVisitTs(b)-lastVisitTs(a));
+  renderTagFilterRow();
+  const container = document.getElementById('stores-container');
+  if (!stores.length) { container.innerHTML='<div class="empty-state" style="padding:60px 0">No visited stores yet.<br>Tap + to add one!</div>'; return; }
+  container.innerHTML = storeViewMode==='grid'
+    ? `<div class="card-grid">${stores.map(storeCardHTML).join('')}</div>`
+    : stores.map(storeListHTML).join('');
+  container.querySelectorAll('[data-id]').forEach(el => el.addEventListener('click', () => openDetail(el.dataset.id)));
+}
+
+function renderTagFilterRow() {
+  const row = document.getElementById('tag-filter-row');
+  const usedTags = [...new Set(allStores.filter(s=>s.status==='visited').flatMap(s=>s.tags||[]))];
+  row.innerHTML = ['All',...usedTags].map(t =>
+    `<div class="tag-chip${t==='All'?(activeTagFilter===null?' active':''):(activeTagFilter===t?' active':'')}" data-tag="${t}">${t}</div>`
+  ).join('');
+  row.querySelectorAll('.tag-chip').forEach(c => c.addEventListener('click', () => {
+    activeTagFilter = c.dataset.tag==='All' ? null : c.dataset.tag;
+    renderStores();
+  }));
+}
+
+function storeCardHTML(s) {
+  const ov = s.ratings?.overall||0;
+  const stars = ov ? '★'.repeat(ov)+'☆'.repeat(5-ov) : '☆☆☆☆☆';
+  const thumb = s.photo ? `<img src="${s.photo}" onerror="this.parentElement.innerHTML='🏪'">` : '🏪';
+  const tags = (s.tags||[]).slice(0,2).map(t=>`<span class="mini-tag">${t}</span>`).join('');
+  return `<div class="store-card" data-id="${s.id}">
+    <div class="store-card-img">${thumb}<div class="store-card-status ${s.status}"></div></div>
+    <div class="store-card-body">
+      <div class="store-card-name">${esc(s.name)}</div>
+      <div class="store-card-city">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')}</div>
+      <div class="store-card-stars">${stars}</div>
+      <div class="store-card-tags">${tags}</div>
+    </div>
+  </div>`;
+}
+
+function storeListHTML(s) {
+  const ov = s.ratings?.overall||0;
+  const vc = s.visits?.length||0;
+  const thumb = s.photo ? `<img src="${s.photo}" onerror="this.style.display='none'">` : '🏪';
+  return `<div class="store-list-item" data-id="${s.id}">
+    <div class="list-thumb">${thumb}</div>
+    <div class="list-info">
+      <div class="list-name">${esc(s.name)}</div>
+      <div class="list-sub">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')} · ${(s.tags||[]).slice(0,2).join(', ')||'No tags'}</div>
+    </div>
+    <div class="list-right">
+      <div class="list-overall">${ov?ov+'/5':'—'}</div>
+      <div class="list-visits">${vc} visit${vc!==1?'s':''}</div>
+    </div>
+  </div>`;
+}
+
+// ── WISHLIST ──────────────────────────────────────────────
+function renderWishlist() {
+  const wish = allStores.filter(s => s.status==='wishlist');
+  const container = document.getElementById('wishlist-container');
+  if (!wish.length) { container.innerHTML='<div class="empty-state" style="padding:60px 0">Your wishlist is empty.<br>Add stores you want to visit!</div>'; return; }
+  container.innerHTML = wish.map(s => {
+    const thumb = s.photo ? `<img src="${s.photo}" onerror="this.style.display='none'">` : '⭐';
+    return `<div class="store-list-item" data-id="${s.id}">
+      <div class="list-thumb">${thumb}</div>
+      <div class="list-info">
+        <div class="list-name">${esc(s.name)}</div>
+        <div class="list-sub">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')} · ${(s.tags||[]).slice(0,2).join(', ')||'No tags'}</div>
+      </div>
+      <div class="list-right"><div style="font-size:20px">⭐</div></div>
+    </div>`;
+  }).join('');
+  container.querySelectorAll('[data-id]').forEach(el => el.addEventListener('click', () => openDetail(el.dataset.id)));
+}
+
+// ── STORE DETAIL ──────────────────────────────────────────
+function openDetail(id) {
+  detailStoreId = id;
+  const s = allStores.find(x => x.id===id);
+  if (!s) return;
+  const ratings = s.ratings||{};
+  const visits  = s.visits||[];
+  const ratingLabels = {selection:'Selection',prices:'Prices',organization:'Organization',overall:'Overall'};
+
+  const ratingsHTML = s.status==='visited' ? `
+    <div class="section-title" style="margin-bottom:10px">Ratings</div>
+    <div class="ratings-grid">
+      ${Object.entries(ratingLabels).map(([k,l]) => {
+        const v = ratings[k]||0;
+        return `<div class="rating-item">
+          <div class="rating-item-label">${l}</div>
+          <div class="rating-item-stars">${v?'★'.repeat(v)+'☆'.repeat(5-v):'—'}</div>
+          <div class="rating-item-num">${v||'—'}</div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  const visitsHTML = s.status==='visited' ? `
+    <div class="section-title" style="margin-bottom:10px">Visit Log</div>
+    <div id="visit-log-entries">
+      ${visits.length ? [...visits].sort((a,b)=>b.date.localeCompare(a.date)).map((v,i)=>`
+        <div class="visit-entry">
+          <div class="visit-entry-header">
+            <div class="visit-date">📅 ${formatDate(v.date)}</div>
+            <button class="visit-delete" onclick="deleteVisit('${id}',${i})">✕</button>
+          </div>
+          ${v.notes?`<div class="visit-notes">${esc(v.notes)}</div>`:''}
+          ${v.finds?`<div class="visit-finds">${esc(v.finds)}</div>`:''}
+        </div>`).join('') : '<div class="empty-state" style="padding:16px 0">No visits logged yet.</div>'}
+    </div>` : '';
+
+  const photoHTML = s.photo
+    ? `<div class="detail-hero"><img src="${s.photo}"><div class="detail-hero-overlay">📷 Tap to change</div></div>`
+    : `<div class="detail-hero"><span>🏪</span><div class="detail-hero-overlay">📷 Add photo</div></div>`;
+
+  const actionsHTML = [
+    s.address ? `<button class="detail-action-btn" onclick="getDirections('${esc(s.address+' '+(s.city||'')+' '+(s.state||''))}')">🗺️ Directions</button>` : '',
+    s.phone   ? `<button class="detail-action-btn" onclick="window.open('tel:${esc(s.phone)}')">📞 Call</button>` : '',
+    s.website ? `<button class="detail-action-btn" onclick="openWebsite('${esc(s.website)}')">🌐 Website</button>` : '',
+  ].filter(Boolean).join('');
+
+  document.getElementById('modal-detail-body').innerHTML = `
+    ${photoHTML}
+    <div class="detail-name">${esc(s.name)}</div>
+    ${s.address?`<div class="detail-address">📍 ${esc(s.address)}${s.city?', '+esc(s.city):''}${s.state?', '+esc(s.state):''}</div>`:''}
+    <div class="detail-badges">
+      <span class="detail-badge ${s.status}">${s.status==='visited'?'✓ Visited':'⭐ Wishlist'}</span>
+      ${(s.tags||[]).map(t=>`<span class="detail-badge" style="background:var(--border-light);border:1px solid var(--border);color:var(--text-secondary)">${t}</span>`).join('')}
+    </div>
+    ${actionsHTML?`<div class="detail-actions">${actionsHTML}</div>`:''}
+    ${s.notes?`<div style="margin-bottom:16px"><div class="section-title" style="margin-bottom:6px">Notes</div><div style="font-size:13.5px;line-height:1.6;background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-primary)">${esc(s.notes)}</div></div>`:''}
+    ${ratingsHTML}
+    ${visitsHTML}
+  `;
+
+  document.querySelector('#modal-detail-body .detail-hero').addEventListener('click', () => { closeModal('modal-detail'); openAddStore(id); });
+  document.getElementById('detail-modal-title').textContent = s.name;
+  document.getElementById('detail-edit-btn').onclick = () => { closeModal('modal-detail'); openAddStore(id); };
+  document.getElementById('detail-delete-btn').onclick = () => deleteStore(id);
+  document.getElementById('detail-visit-btn').style.display = s.status==='visited' ? 'flex' : 'none';
+  document.getElementById('detail-visit-btn').onclick = () => openLogVisit(id);
+  openModal('modal-detail');
+}
+
+// ── ADD / EDIT STORE ──────────────────────────────────────
+function openAddStore(editId=null) {
+  editingStoreId = editId;
+  const s = editId ? allStores.find(x=>x.id===editId) : null;
+  document.getElementById('modal-store-title').textContent = editId ? 'Edit Store' : 'Add Store';
+  document.getElementById('f-name').value    = s?.name||'';
+  document.getElementById('f-address').value = s?.address||'';
+  document.getElementById('f-city').value    = s?.city||'';
+  document.getElementById('f-state').value   = s?.state||'';
+  document.getElementById('f-phone').value   = s?.phone||'';
+  document.getElementById('f-website').value = s?.website||'';
+  document.getElementById('f-notes').value   = s?.notes||'';
+  document.getElementById('f-photo-url').value = '';
+  document.getElementById('photo-url-row').style.display = 'none';
+  currentStatus    = s?.status||'visited';
+  currentRatings   = {...(s?.ratings||{selection:0,prices:0,organization:0,overall:0})};
+  currentPhotoData = s?.photo||null;
+  currentTags      = [...(s?.tags||[])];
+  setStatus(currentStatus);
+  renderTagPicker();
+  renderAllStars();
+  renderPhotoPreview();
+  openModal('modal-store');
+}
+
+function setStatus(status) {
+  currentStatus = status;
+  document.getElementById('status-visited-btn').className = 'status-btn'+(status==='visited'?' active-visited':'');
+  document.getElementById('status-wishlist-btn').className = 'status-btn'+(status==='wishlist'?' active-wishlist':'');
+  document.getElementById('ratings-section').style.display = status==='visited' ? 'block' : 'none';
+}
+document.getElementById('status-visited-btn').addEventListener('click', () => setStatus('visited'));
+document.getElementById('status-wishlist-btn').addEventListener('click', () => setStatus('wishlist'));
+
+function renderTagPicker() {
+  const picker = document.getElementById('tag-picker');
+  picker.innerHTML = TAGS.map(t =>
+    `<button class="tag-pick-btn${currentTags.includes(t)?' selected':''}" data-tag="${t}">${t}</button>`
+  ).join('');
+  picker.querySelectorAll('.tag-pick-btn').forEach(b => b.addEventListener('click', () => {
+    const t = b.dataset.tag;
+    currentTags = currentTags.includes(t) ? currentTags.filter(x=>x!==t) : [...currentTags,t];
+    b.classList.toggle('selected', currentTags.includes(t));
+  }));
+}
+
+function renderAllStars() {
+  ['selection','prices','organization','overall'].forEach(k => renderStars(k, currentRatings[k]));
+}
+
+function renderStars(key, value) {
+  const el = document.getElementById('stars-'+key);
+  if (!el) return;
+  el.innerHTML = [1,2,3,4,5].map(n =>
+    `<button class="star-btn${n<=value?' filled':''}" data-n="${n}" data-key="${key}">★</button>`
+  ).join('');
+  el.querySelectorAll('.star-btn').forEach(b => b.addEventListener('click', () => {
+    currentRatings[b.dataset.key] = parseInt(b.dataset.n);
+    renderStars(b.dataset.key, currentRatings[b.dataset.key]);
+  }));
+}
+
+document.getElementById('f-photo-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { currentPhotoData = ev.target.result; renderPhotoPreview(); };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('f-photo-url').addEventListener('input', e => {
+  const url = e.target.value;
+  if (url.startsWith('http')) { currentPhotoData = url; renderPhotoPreview(); }
+});
+
+document.getElementById('show-url-btn').addEventListener('click', () => {
+  document.getElementById('photo-url-row').style.display = 'block';
+});
+
+function renderPhotoPreview() {
+  const area = document.getElementById('photo-upload-area');
+  if (currentPhotoData) {
+    area.className = 'photo-upload-area has-photo';
+    area.innerHTML = `<img src="${currentPhotoData}"><div style="padding:6px;text-align:center;font-size:11px;color:var(--text-muted)">Tap to change</div>`;
+    area.onclick = () => document.getElementById('f-photo-input').click();
+  } else {
+    area.className = 'photo-upload-area';
+    area.innerHTML = `<div class="photo-upload-icon">📷</div><div class="photo-upload-text">Tap to add a photo</div><div class="photo-upload-hint">From your camera roll or files</div>`;
+    area.onclick = () => document.getElementById('f-photo-input').click();
+  }
+}
+
+async function saveStore() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Please enter a store name.'); return; }
+  const saveBtn = document.getElementById('modal-store-save');
+  saveBtn.textContent = 'Saving…'; saveBtn.disabled = true;
+  const data = {
+    name,
+    address:  document.getElementById('f-address').value.trim(),
+    city:     document.getElementById('f-city').value.trim(),
+    state:    document.getElementById('f-state').value.trim().toUpperCase(),
+    phone:    document.getElementById('f-phone').value.trim(),
+    website:  document.getElementById('f-website').value.trim(),
+    notes:    document.getElementById('f-notes').value.trim(),
+    status:   currentStatus,
+    tags:     currentTags,
+    ratings:  currentStatus==='visited' ? {...currentRatings} : {},
+    photo:    currentPhotoData||'',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  try {
+    if (editingStoreId) {
+      await storesCol.doc(editingStoreId).update(data);
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.visits = [];
+      await storesCol.add(data);
+    }
+    closeModal('modal-store');
+  } catch(e) { alert('Error saving: '+e.message); }
+  finally { saveBtn.textContent = '💾 Save Store'; saveBtn.disabled = false; }
+}
+
+async function deleteStore(id) {
+  if (!confirm('Delete this store? This cannot be undone.')) return;
+  await storesCol.doc(id).delete();
+  closeModal('modal-detail');
+}
+
+// ── LOG VISIT ─────────────────────────────────────────────
+function openLogVisit(id) {
+  detailStoreId = id;
+  document.getElementById('v-date').value  = new Date().toISOString().split('T')[0];
+  document.getElementById('v-notes').value = '';
+  document.getElementById('v-finds').value = '';
+  closeModal('modal-detail');
+  openModal('modal-visit');
+}
+
+async function saveVisit() {
+  const date = document.getElementById('v-date').value;
+  if (!date) { alert('Please select a date.'); return; }
+  const s = allStores.find(x => x.id===detailStoreId);
+  const visits = [...(s?.visits||[]), {
+    date,
+    notes: document.getElementById('v-notes').value.trim(),
+    finds: document.getElementById('v-finds').value.trim(),
+  }];
+  await storesCol.doc(detailStoreId).update({ visits });
+  closeModal('modal-visit');
+  setTimeout(() => openDetail(detailStoreId), 250);
+}
+
+async function deleteVisit(storeId, idx) {
+  if (!confirm('Remove this visit entry?')) return;
+  const s = allStores.find(x => x.id===storeId);
+  const visits = (s?.visits||[]).filter((_,i)=>i!==idx);
+  await storesCol.doc(storeId).update({ visits });
+  openDetail(storeId);
+}
+
+// ── HELPERS ───────────────────────────────────────────────
+function getDirections(addr) { window.open(`https://maps.google.com/?q=${encodeURIComponent(addr.trim())}`,'_blank'); }
+function openWebsite(url) { window.open(url.startsWith('http') ? url : 'https://'+url, '_blank'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function lastVisitTs(s) { if (!s.visits?.length) return 0; return Math.max(...s.visits.map(v=>new Date(v.date).getTime())); }
+function lastVisitStr(s) {
+  const ts = lastVisitTs(s); if (!ts) return '';
+  const days = Math.floor((Date.now()-ts)/86400000);
+  if (days===0) return 'Today'; if (days===1) return 'Yesterday';
+  if (days<30) return `${days}d ago`; if (days<365) return `${Math.floor(days/30)}mo ago`;
+  return `${Math.floor(days/365)}y ago`;
+}
+function formatDate(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  return `${ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]} ${parseInt(day)}, ${y}`;
+}
+
+// ── WIRE UP ───────────────────────────────────────────────
+document.getElementById('fab').addEventListener('click', () => openAddStore());
+document.getElementById('topbar-add').addEventListener('click', () => openAddStore());
+document.getElementById('modal-store-close').addEventListener('click',  () => closeModal('modal-store'));
+document.getElementById('modal-store-cancel').addEventListener('click', () => closeModal('modal-store'));
+document.getElementById('modal-store-save').addEventListener('click',   saveStore);
+document.getElementById('modal-detail-close').addEventListener('click', () => closeModal('modal-detail'));
+document.getElementById('modal-visit-close').addEventListener('click',  () => closeModal('modal-visit'));
+document.getElementById('modal-visit-cancel').addEventListener('click', () => closeModal('modal-visit'));
+document.getElementById('modal-visit-save').addEventListener('click',   saveVisit);
+['modal-store','modal-detail','modal-visit'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => { if (e.target.id===id) closeModal(id); });
+});
+document.getElementById('stores-search').addEventListener('input', renderStores);
+document.getElementById('stores-sort').addEventListener('change', renderStores);
+document.getElementById('btn-grid').addEventListener('click', () => {
+  storeViewMode='grid';
+  document.getElementById('btn-grid').classList.add('active');
+  document.getElementById('btn-list').classList.remove('active');
+  renderStores();
+});
+document.getElementById('btn-list').addEventListener('click', () => {
+  storeViewMode='list';
+  document.getElementById('btn-list').classList.add('active');
+  document.getElementById('btn-grid').classList.remove('active');
+  renderStores();
+});
+</script>
+</body>
+</html>
