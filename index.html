@@ -284,6 +284,15 @@
   .map-popup-badge.visited { background: rgba(107,143,94,0.15); color: #6b8f5e; border: 1px solid #6b8f5e; }
   .map-popup-badge.wishlist { background: rgba(200,137,42,0.15); color: #c8892a; border: 1px solid #c8892a; }
 
+  /* PULL TO REFRESH */
+  .ptr-indicator { text-align: center; padding: 12px 0; font-size: 13px; color: var(--text-muted); font-family: "Lora", serif; font-style: italic; display: none; }
+  .ptr-indicator.visible { display: block; }
+
+  /* VERSION */
+  .sidebar-version { font-size: 10px; color: var(--text-nav-muted); text-align: center; padding: 6px 0 10px; opacity: 0; transition: opacity var(--transition); letter-spacing: 0.04em; }
+  #sidebar.open .sidebar-version { opacity: 1; }
+  .dashboard-version { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 28px; padding-bottom: 8px; letter-spacing: 0.04em; font-family: "DM Sans", sans-serif; }
+
   /* DISCOVER */
   .discover-result { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
   .discover-result-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
@@ -343,6 +352,7 @@
     <div class="sidebar-footer">
       <button class="nav-item" data-view="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
       <button class="sidebar-toggle" id="sidebar-toggle">⇄</button>
+      <div class="sidebar-version">v1.100.01</div>
     </div>
   </nav>
 
@@ -373,6 +383,7 @@
         <div id="recent-stores"><div class="empty-state">No stores yet — add your first one!</div></div>
         <div class="section-title" style="margin-top:24px">Up Next on Wishlist</div>
         <div id="wishlist-preview"><div class="empty-state">Your wishlist is empty</div></div>
+        <div class="dashboard-version">Antique Companion v1.100.01</div>
       </div>
 
       <!-- STORES -->
@@ -393,6 +404,7 @@
           </div>
         </div>
         <div class="tag-filter-row" id="tag-filter-row"></div>
+        <div class="ptr-indicator" id="ptr-stores">↓ Release to refresh</div>
         <div id="stores-container"><div class="loading-spinner">Loading stores…</div></div>
       </div>
 
@@ -416,7 +428,8 @@
 
       <!-- WISHLIST -->
       <div class="view" id="view-wishlist">
-        <div id="wishlist-container"><div class="loading-spinner">Loading…</div></div>
+        <div class="ptr-indicator" id="ptr-wishlist">↓ Release to refresh</div>
+      <div id="wishlist-container"><div class="loading-spinner">Loading…</div></div>
       </div>
 
       <!-- DISCOVER -->
@@ -541,6 +554,7 @@
     <div class="modal-footer">
       <button class="btn btn-danger" id="detail-delete-btn">🗑</button>
       <button class="btn btn-secondary" id="detail-edit-btn">✏️ Edit</button>
+      <button class="btn btn-primary" id="detail-mark-visited-btn" style="display:none">✓ Mark Visited</button>
       <button class="btn btn-primary" id="detail-visit-btn">📔 Log Visit</button>
     </div>
   </div>
@@ -735,6 +749,7 @@ function storeCardHTML(s) {
       <div class="store-card-name">${esc(s.name)}</div>
       <div class="store-card-city">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')}</div>
       <div class="store-card-stars">${stars}</div>
+      ${lastVisitStr(s) ? `<div style="font-size:10.5px;color:var(--text-muted);margin-top:3px">${lastVisitStr(s)}</div>` : ''}
       <div class="store-card-tags">${tags}</div>
     </div>
   </div>`;
@@ -748,7 +763,7 @@ function storeListHTML(s) {
     <div class="list-thumb">${thumb}</div>
     <div class="list-info">
       <div class="list-name">${esc(s.name)}</div>
-      <div class="list-sub">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')} · ${(s.tags||[]).slice(0,2).join(', ')||'No tags'}</div>
+      <div class="list-sub">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')} · ${(s.tags||[]).slice(0,2).join(', ')||'No tags'}${lastVisitStr(s)?' · '+lastVisitStr(s):''}</div>
     </div>
     <div class="list-right">
       <div class="list-overall">${ov?ov+'/5':'—'}</div>
@@ -768,7 +783,7 @@ function renderWishlist() {
       <div class="list-thumb">${thumb}</div>
       <div class="list-info">
         <div class="list-name">${esc(s.name)}</div>
-        <div class="list-sub">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')} · ${(s.tags||[]).slice(0,2).join(', ')||'No tags'}</div>
+        <div class="list-sub">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')} · ${(s.tags||[]).slice(0,2).join(', ')||'No tags'}${lastVisitStr(s)?' · '+lastVisitStr(s):''}</div>
       </div>
       <div class="list-right"><div style="font-size:20px">⭐</div></div>
     </div>`;
@@ -842,6 +857,8 @@ function openDetail(id) {
   document.getElementById('detail-delete-btn').onclick = () => deleteStore(id);
   document.getElementById('detail-visit-btn').style.display = s.status==='visited' ? 'flex' : 'none';
   document.getElementById('detail-visit-btn').onclick = () => openLogVisit(id);
+  document.getElementById('detail-mark-visited-btn').style.display = s.status==='wishlist' ? 'flex' : 'none';
+  document.getElementById('detail-mark-visited-btn').onclick = () => markAsVisited(id);
   openModal('modal-detail');
 }
 
@@ -1162,6 +1179,31 @@ document.getElementById('map-locate-btn').addEventListener('click', () => {
     map.setView([pos.coords.latitude, pos.coords.longitude], 13);
   }, () => alert('Could not get your location.'));
 });
+
+// ── PULL TO REFRESH ──────────────────────────────────────
+function setupPullToRefresh(contentEl, indicatorId, refreshFn) {
+  let startY = 0, pulling = false, triggered = false;
+  const indicator = document.getElementById(indicatorId);
+  contentEl.addEventListener('touchstart', e => {
+    if (contentEl.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; triggered = false; }
+  }, { passive: true });
+  contentEl.addEventListener('touchmove', e => {
+    if (!pulling) return;
+    const dist = e.touches[0].clientY - startY;
+    if (dist > 60 && !triggered) { indicator.classList.add('visible'); indicator.textContent = '↑ Release to refresh'; triggered = true; }
+    else if (dist > 10 && dist <= 60) { indicator.classList.add('visible'); indicator.textContent = '↓ Pull to refresh'; }
+  }, { passive: true });
+  contentEl.addEventListener('touchend', () => {
+    if (triggered) { indicator.textContent = '⟳ Refreshing…'; refreshFn(); setTimeout(() => indicator.classList.remove('visible'), 800); }
+    else { indicator.classList.remove('visible'); }
+    pulling = false; triggered = false;
+  });
+}
+setTimeout(() => {
+  const contentEl = document.getElementById('content');
+  setupPullToRefresh(contentEl, 'ptr-stores',  renderStores);
+  setupPullToRefresh(contentEl, 'ptr-wishlist', renderWishlist);
+}, 500);
 
 document.getElementById('fab').addEventListener('click', () => openAddStore());
 document.getElementById('topbar-add').addEventListener('click', () => openAddStore());
