@@ -6,6 +6,7 @@
 <title>Antique Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root {
     --bg-base:        #f5f0e8;
@@ -256,6 +257,55 @@
   .visit-finds{font-size:12px;color:var(--text-secondary);font-style:italic;font-family:'Lora',serif}
   .visit-finds::before{content:'🏷️ '}
 
+  /* MAP VIEW */
+  #view-map { height: calc(100dvh - var(--header-h)); margin: -20px -16px -80px; display: none; }
+  #view-map.active { display: flex; flex-direction: column; }
+  #map-container { flex: 1; position: relative; }
+  #map { width: 100%; height: 100%; }
+  #map-toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); flex-shrink: 0; z-index: 10; }
+  #map-layer-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .map-layer-btn { padding: 6px 14px; border: none; background: var(--bg-card); color: var(--text-secondary); font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: background var(--transition), color var(--transition); }
+  .map-layer-btn.active { background: var(--accent); color: #fff; }
+  .map-legend { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .legend-dot.visited { background: #6b8f5e; }
+  .legend-dot.wishlist { background: #c8892a; }
+  #map-locate-btn { width: 34px; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: background var(--transition); }
+  #map-locate-btn:hover { background: var(--border-light); }
+
+  /* LEAFLET POPUP CUSTOM */
+  .map-popup { min-width: 160px; }
+  .map-popup-name { font-family: 'Lora', serif; font-size: 14px; font-weight: 500; color: #1e110a; margin-bottom: 3px; }
+  .map-popup-sub { font-size: 11.5px; color: #a08060; margin-bottom: 6px; }
+  .map-popup-stars { color: #d4a843; font-size: 12px; letter-spacing: -1px; margin-bottom: 6px; }
+  .map-popup-btn { display: inline-block; padding: 5px 12px; background: #b5651d; color: #fff; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; width: 100%; text-align: center; font-family: 'DM Sans', sans-serif; }
+  .map-popup-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10.5px; font-weight: 500; margin-bottom: 6px; }
+  .map-popup-badge.visited { background: rgba(107,143,94,0.15); color: #6b8f5e; border: 1px solid #6b8f5e; }
+  .map-popup-badge.wishlist { background: rgba(200,137,42,0.15); color: #c8892a; border: 1px solid #c8892a; }
+
+  /* DISCOVER */
+  .discover-result { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
+  .discover-result-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .discover-result-icon { width: 42px; height: 42px; border-radius: var(--radius-sm); background: var(--border-light); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .discover-result-info { flex: 1; min-width: 0; }
+  .discover-result-name { font-family: "Lora", serif; font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+  .discover-result-addr { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .discover-result-dist { font-size: 11.5px; color: var(--accent); font-weight: 500; }
+  .discover-result-actions { display: flex; gap: 8px; }
+  .discover-action-btn { flex: 1; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); font-size: 12.5px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background var(--transition); font-family: "DM Sans", sans-serif; }
+  .discover-action-btn:hover { background: var(--border-light); color: var(--text-primary); }
+  .discover-action-btn.save { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .discover-action-btn.save:hover { background: var(--accent-warm); }
+  .discover-action-btn.saved { background: var(--status-visited); color: #fff; border-color: var(--status-visited); cursor: default; }
+  .discover-status-badge { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-top: 3px; }
+  .discover-status-badge.visited { background: rgba(107,143,94,0.15); color: var(--status-visited); border: 1px solid var(--status-visited); }
+  .discover-status-badge.wishlist { background: rgba(200,137,42,0.15); color: var(--status-wishlist); border: 1px solid var(--status-wishlist); }
+  .discover-loading { text-align: center; padding: 40px 0; color: var(--text-muted); font-family: "Lora", serif; font-style: italic; }
+  .discover-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+  .discover-empty-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.3; }
+  .discover-empty-text { font-family: "Lora", serif; font-style: italic; font-size: 14px; }
+
   /* TEXTURE */
   body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:0.025;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
 
@@ -348,7 +398,20 @@
 
       <!-- MAP -->
       <div class="view" id="view-map">
-        <div class="placeholder-view"><div class="placeholder-icon">🗺️</div><div class="placeholder-title">Map View</div><div class="placeholder-text">See all your stores pinned on a map with satellite and street toggles.</div><div class="coming-soon-badge">Phase 3 — Coming Soon</div></div>
+        <div id="map-toolbar">
+          <div id="map-layer-toggle">
+            <button class="map-layer-btn active" id="btn-streets">🗺 Streets</button>
+            <button class="map-layer-btn" id="btn-satellite">🛰 Satellite</button>
+          </div>
+          <button id="map-locate-btn" title="Find my location">📍</button>
+          <div class="map-legend">
+            <div class="legend-item"><div class="legend-dot visited"></div>Visited</div>
+            <div class="legend-item"><div class="legend-dot wishlist"></div>Wishlist</div>
+          </div>
+        </div>
+        <div id="map-container">
+          <div id="map"></div>
+        </div>
       </div>
 
       <!-- WISHLIST -->
@@ -358,7 +421,24 @@
 
       <!-- DISCOVER -->
       <div class="view" id="view-discover">
-        <div class="placeholder-view"><div class="placeholder-icon">🔍</div><div class="placeholder-title">Discover</div><div class="placeholder-text">Search for antique and thrift stores near any location.</div><div class="coming-soon-badge">Phase 4 — Coming Soon</div></div>
+        <div style="margin-bottom:14px">
+          <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;margin-bottom:4px">Find Stores Nearby</div>
+          <div style="font-size:12.5px;color:var(--text-muted);font-family:'Lora',serif;font-style:italic">Search for antique &amp; thrift shops near any location</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input class="search-box" id="discover-location" placeholder="City, address, or zip&hellip;" style="flex:1" />
+          <button class="icon-btn" id="discover-gps-btn" title="Use my location" style="flex-shrink:0;width:40px">&#x1F4CD;</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <select class="select-box" id="discover-radius" style="flex:1">
+            <option value="5000">Within 5 miles</option>
+            <option value="10000" selected>Within 10 miles</option>
+            <option value="25000">Within 25 miles</option>
+            <option value="50000">Within 50 miles</option>
+          </select>
+          <button class="btn btn-primary" id="discover-search-btn" style="flex:1;height:36px;font-size:13.5px">Search</button>
+        </div>
+        <div id="discover-results"></div>
       </div>
 
       <!-- SETTINGS -->
@@ -486,6 +566,9 @@
   </div>
 </div>
 
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -536,8 +619,13 @@ function navigateTo(view) {
   document.getElementById('topbar-subtitle').textContent = viewMeta[view].subtitle;
   document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   document.getElementById('fab').style.display = ['stores','dashboard','wishlist'].includes(view) ? 'flex' : 'none';
-  if (view === 'stores') renderStores();
-  if (view === 'wishlist') renderWishlist();
+  if (view === 'map') {
+    setTimeout(() => {
+      initMap();
+      map && map.invalidateSize();
+      renderMapMarkers();
+    }, 50);
+  }
 }
 document.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => navigateTo(btn.dataset.view)));
 document.getElementById('sidebar-toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
@@ -561,6 +649,7 @@ storesCol.orderBy('createdAt','desc').onSnapshot(snap => {
   renderDashboard();
   if (currentView === 'stores') renderStores();
   if (currentView === 'wishlist') renderWishlist();
+  if (currentView === 'map') renderMapMarkers();
 }, err => console.error(err));
 
 // ── STATS ─────────────────────────────────────────────────
@@ -868,6 +957,14 @@ async function saveStore() {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
   try {
+    // Geocode address for map pin
+    const address = document.getElementById('f-address').value.trim();
+    const city    = document.getElementById('f-city').value.trim();
+    const state   = document.getElementById('f-state').value.trim();
+    if (address || city) {
+      const coords = await geocodeAddress(address, city, state);
+      if (coords) { data.lat = coords.lat; data.lng = coords.lng; }
+    }
     if (editingStoreId) {
       await storesCol.doc(editingStoreId).update(data);
     } else {
@@ -938,7 +1035,134 @@ function formatDate(d) {
   return `${ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]} ${parseInt(day)}, ${y}`;
 }
 
-// ── WIRE UP ───────────────────────────────────────────────
+// ── MAP ───────────────────────────────────────────────────
+let map = null;
+let mapMarkers = [];
+let streetsLayer, satelliteLayer;
+let mapLayerMode = 'streets';
+let mapInitialized = false;
+
+function initMap() {
+  if (mapInitialized) return;
+  mapInitialized = true;
+
+  // Tile layers
+  streetsLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 19
+  });
+  satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '© Esri, Maxar, Earthstar Geographics', maxZoom: 19
+  });
+
+  map = L.map('map', {
+    layers: [streetsLayer],
+    zoomControl: true,
+  });
+
+  // Default center — US center, will move to stores if available
+  map.setView([39.8283, -98.5795], 4);
+
+  // Fix Leaflet icon paths (CDN issue)
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  });
+
+  renderMapMarkers();
+}
+
+function getMarkerIcon(status) {
+  const color = status === 'visited' ? '#6b8f5e' : '#c8892a';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">
+    <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 24 14 24s14-13.5 14-24C28 6.268 21.732 0 14 0z" fill="${color}" stroke="white" stroke-width="2"/>
+    <circle cx="14" cy="14" r="5" fill="white"/>
+  </svg>`;
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize: [28, 38],
+    iconAnchor: [14, 38],
+    popupAnchor: [0, -38],
+  });
+}
+
+function renderMapMarkers() {
+  if (!map) return;
+
+  // Clear existing markers
+  mapMarkers.forEach(m => m.remove());
+  mapMarkers = [];
+
+  const bounds = [];
+
+  allStores.forEach(s => {
+    if (!s.lat || !s.lng) return;
+    const marker = L.marker([s.lat, s.lng], { icon: getMarkerIcon(s.status) });
+    const ov = s.ratings?.overall || 0;
+    const stars = ov ? '★'.repeat(ov) + '☆'.repeat(5 - ov) : '';
+    marker.bindPopup(`
+      <div class="map-popup">
+        <div class="map-popup-name">${esc(s.name)}</div>
+        <div class="map-popup-sub">${esc(s.city||'')}${s.city&&s.state?', ':''}${esc(s.state||'')}</div>
+        <span class="map-popup-badge ${s.status}">${s.status==='visited'?'✓ Visited':'⭐ Wishlist'}</span>
+        ${stars ? `<div class="map-popup-stars">${stars}</div>` : ''}
+        <button class="map-popup-btn" onclick="openDetailFromMap('${s.id}')">View Details</button>
+      </div>
+    `, { maxWidth: 200 });
+    marker.addTo(map);
+    mapMarkers.push(marker);
+    bounds.push([s.lat, s.lng]);
+  });
+
+  if (bounds.length > 0) {
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+  }
+}
+
+function openDetailFromMap(id) {
+  map.closePopup();
+  setTimeout(() => openDetail(id), 100);
+}
+
+function setMapLayer(mode) {
+  if (!map) return;
+  mapLayerMode = mode;
+  if (mode === 'streets') {
+    map.removeLayer(satelliteLayer);
+    map.addLayer(streetsLayer);
+  } else {
+    map.removeLayer(streetsLayer);
+    map.addLayer(satelliteLayer);
+  }
+  document.getElementById('btn-streets').classList.toggle('active', mode === 'streets');
+  document.getElementById('btn-satellite').classList.toggle('active', mode === 'satellite');
+}
+
+// Geocode address to lat/lng using Nominatim (free, no key)
+async function geocodeAddress(address, city, state) {
+  const q = [address, city, state].filter(Boolean).join(', ');
+  if (!q) return null;
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, {
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'AntiquCompanion/1.0' }
+    });
+    const data = await res.json();
+    if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch(e) { console.warn('Geocode failed:', e); }
+  return null;
+}
+
+document.getElementById('btn-streets').addEventListener('click', () => setMapLayer('streets'));
+document.getElementById('btn-satellite').addEventListener('click', () => setMapLayer('satellite'));
+document.getElementById('map-locate-btn').addEventListener('click', () => {
+  if (!map) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+  }, () => alert('Could not get your location.'));
+});
+
 document.getElementById('fab').addEventListener('click', () => openAddStore());
 document.getElementById('topbar-add').addEventListener('click', () => openAddStore());
 document.getElementById('modal-store-close').addEventListener('click',  () => closeModal('modal-store'));
