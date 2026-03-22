@@ -1220,15 +1220,7 @@ setTimeout(() => {
 document.getElementById('fab').addEventListener('click', () => openAddStore());
 document.getElementById('topbar-add').addEventListener('click', () => openAddStore());
 document.getElementById('exit-btn').addEventListener('click', () => {
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.navigator.standalone === true;
-  if (isIOS && isStandalone) {
-    // iOS home screen app — window.close() doesn't work
-    // Show a friendly overlay instead
-    showExitOverlay();
-  } else {
-    if (confirm('Exit Antique Companion?')) window.close();
-  }
+  showExitOverlay();
 });
 
 function showExitOverlay() {
@@ -1239,7 +1231,7 @@ function showExitOverlay() {
     z-index:9999;display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:16px;padding:32px;
   `;
-  overlay.innerHTML = \`
+  overlay.innerHTML = `
     <div style="font-size:48px">🏺</div>
     <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#f0e6d0;text-align:center">Thanks for using<br>Antique Companion</div>
     <div style="font-size:14px;color:#a08060;font-family:'Lora',serif;font-style:italic;text-align:center">Press the Home button<br>to close the app.</div>
@@ -1248,7 +1240,7 @@ function showExitOverlay() {
       border:none;border-radius:10px;font-size:15px;font-weight:500;
       font-family:'DM Sans',sans-serif;cursor:pointer;
     ">Stay in App</button>
-  \`;
+  `;
   document.body.appendChild(overlay);
 }
 document.getElementById('modal-store-close').addEventListener('click',  () => closeModal('modal-store'));
