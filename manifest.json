@@ -1,0 +1,25 @@
+{
+  "name": "Antique Companion",
+  "short_name": "Antique Co.",
+  "description": "Your personal antique & thrift store scouting journal",
+  "start_url": "/Antique-companion/",
+  "scope": "/Antique-companion/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2c1a0e",
+  "theme_color": "#2c1a0e",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
