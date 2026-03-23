@@ -649,7 +649,7 @@ const viewMeta = {
   settings: { title:'Settings',  subtitle:'App preferences' },
 };
 
-function navigateTo(view) {
+let navigateTo = function(view) {
   currentView = view;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-'+view)?.classList.add('active');
@@ -1272,10 +1272,10 @@ function showExitOverlay() {
 
 // ── ANDROID / BROWSER BACK BUTTON ────────────────────────
 const _viewHistory = ['dashboard'];
-const _baseNavigateTo = navigateTo;
+const _origNav = navigateTo;
 navigateTo = function(view) {
   if (view !== currentView) _viewHistory.push(view);
-  _baseNavigateTo(view);
+  _origNav(view);
 };
 history.pushState({ ac: true }, '');
 window.addEventListener('popstate', () => {
@@ -1284,7 +1284,7 @@ window.addEventListener('popstate', () => {
   if (_viewHistory.length > 1) {
     _viewHistory.pop();
     const prev = _viewHistory[_viewHistory.length - 1];
-    _baseNavigateTo(prev);
+    _origNav(prev);
     history.pushState({ ac: true }, '');
   } else {
     showExitOverlay();
